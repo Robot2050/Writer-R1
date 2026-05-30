@@ -1,5 +1,5 @@
 <h1 align="center">
-    Writer-R1: Enhancing Generative Writing in LLMs via Memory-augmented Replay Policy Optimization
+    Writer-R1
 </h1>
 
 ## 🎯 Who Should Pay Attention to Our Work?
