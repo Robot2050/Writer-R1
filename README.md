@@ -4,58 +4,57 @@
 
 ## 🎯 Who Should Pay Attention to Our Work?
 
-* **Researchers in Long-Form Text Generation:** Scholars addressing the notorious challenges of long-horizon planning, such as factual inconsistencies, loose inter-paragraph transitions, and narrative collapse in ultra-long outputs (e.g., novels, reports, legal documents).
-* **Practitioners of RLHF:** Engineers and scientists exploring Reinforcement Learning from Human/AI Feedback who struggle with the lack of verifiable ground truth and high annotation costs in divergent, open-ended tasks like creative writing.
-* **LLM Alignment Specialists:** Those interested in moving beyond standard Supervised Fine-Tuning to more robust alignment paradigms that combine parameter internalization with inference-time reflection.
-* **Developers of Efficient LLMs:** Teams aiming to maximize the capabilities of smaller models (e.g., 7B parameter scale or lower) to rival or surpass typically larger foundation models (100B+) through algorithmic innovation rather than sheer scale.
-
+* **Researchers in Generative and Long-Form Writing:** Scholars studying open-ended generation, discourse-level planning, stylistic control, logical progression, instruction satisfaction, and long-text generation in scenarios such as reports, narratives, legal drafting, educational content, and marketing copywriting.
+* **Researchers in Open-Ended Evaluation and Reward Modeling:** Researchers addressing the lack of verifiable reference answers, high annotation costs, evaluative bias, and coarse-grained feedback signals in automatic evaluation for generative writing.
+* **Practitioners of Reinforcement Learning for LLMs:** Engineers and scientists exploring how prompt-adaptive, interpretable, and fine-grained evaluation signals can be converted into rewards for reinforcement learning in open-ended generation tasks.
+* **Developers of Compact Writing-Oriented LLMs:** Teams aiming to improve smaller-scale models through evaluation-guided training, prompt-specific skill construction, and reward-based optimization rather than relying solely on model scaling.
 
 ## 🛠️ Quick Start
 
-The following scripts constitute the workflow for generation, self-reflection, evaluation, scoring aggregation, and lightweight model training:
+The following scripts constitute the workflow for response generation, skill-guided refinement, benchmark evaluation, score aggregation, and model training:
 
 * `generate_response.py`
-  Performs *direct inference* with the target model to produce an initial answer without self-critique or iterative refinement.
+  Performs *direct inference* with the target model to generate an initial response without skill-guided rewriting or iterative refinement.
 
 * `llm_reflection.py`
-  Executes a *self-reflection pipeline* in which a single model both generates and then refines its own output through structured reasoning and revision.
+  Executes a *single-model skill-guided rewriting pipeline*, where the model uses dynamically constructed evaluation skills to assess and refine its own output.
 
 * `llm_reflection2.py`
-  Implements a *dual-model reflection setup*: one model is designated to generate the candidate response, while a second (potentially stronger or differently specialized) model conducts reflection, critique, and guided improvement.
+  Implements a *dual-model skill-guided refinement setup*: one model generates the candidate response, while another model provides evaluation-oriented critique and guided rewriting based on prompt-specific skills.
 
 * `evaluate_benchmark.py`
-  Runs *benchmark evaluation* and computes corresponding scores according to the specified evaluation protocol.
+  Runs *benchmark evaluation* and computes scores according to the specified evaluation protocol.
 
 * `calculate_scores.py`
-  Aggregates and post-processes evaluation outputs to compute *final consolidated scores*.
+  Aggregates and post-processes evaluation outputs to obtain *final consolidated scores*.
 
 * `train_bash`
-  Provides the *training entry script* for aligning smaller models, enabling reproducible execution of the training pipeline.
-
+  Provides the *training entry script* for reward-based optimization of writing-oriented models, enabling reproducible execution of the Writer-R1 training pipeline.
 
 ## ✨ Core Contributions
 
-This paper introduces **Writer-R1**, a unified framework that bridges the gap between training and inference to solve the lack of verifiable reference answers in creative writing. The core contributions are fourfold:
+This paper introduces **SkillForge** and **Writer-R1**, a unified evaluation-training framework for open-ended generative writing. The core contributions are fourfold:
 
-1. **Dynamic Evaluation via Grounded Theory & Multi-Agents**
-   The paper proposes a novel methodology that instantiates the three-stage coding process of **Grounded Theory** into a multi-agent collaborative workflow. Instead of relying on static metrics or expensive human review, this system dynamically mines user prompts to construct interpretable, reusable, and fine-grained evaluation checklists. This effectively transforms abstract writing quality into executable, hierarchical scoring rules without requiring human annotation.
+1. **Dynamic Evaluation Skill Mining for Open-Ended Writing**
+   The paper proposes **SkillForge**, a fully automatic framework that derives fine-grained, interpretable, and prompt-specific evaluation skills from user prompts. Inspired by the iterative coding and category refinement process of **Grounded Theory**, SkillForge decomposes writing prompts into actionable requirements and dynamically identifies relevant evaluation dimensions instead of relying on fixed human-designed rubrics or predefined criteria.
 
-2. **Memory-Augmented Replay Policy Optimization (MRPO) for Inference**
-   At the inference stage, the paper introduces a self-reflection mechanism called MRPO. Unlike standard generation, this approach guides the model to perform text-space gradient updates. By utilizing the dynamic evaluation checklist as a constraint, the model engages in structured self-assessment and iterative rewriting. Crucially, a memory buffer is introduced to store and retrieve transferable reflection and rewriting experiences across different samples.
+2. **Skill-Guided Self-Play Rewriting at Inference Time**
+   At the inference stage, the mined evaluation skills serve as explicit revision targets for skill-guided self-play rewriting. Rather than depending on holistic self-judgment or direct answering alone, the model refines its output according to prompt-specific criteria covering content relevance, discourse organization, stylistic expression, logical progression, format constraints, and instruction satisfaction.
 
-3. **End-to-End Alignment via MRPO Training**
-   The framework extends MRPO to the training phase to achieve permanent parameter alignment. By converting the dynamically generated evaluation checklists into sequence-level reward signals, the authors construct a 19K training set. They utilize a hybrid paradigm of **SFT + RL**, adopting the GSPO objective. This allows the model to internalize long-horizon planning and self-diagnostic capabilities, mitigating the variance and instability often associated with long-sequence training.
+3. **Reward-Based Training of Writer-R1 Models**
+   The framework further converts dynamically constructed evaluation skills into reward signals for reinforcement learning. Based on these signals, the paper trains two writing-oriented models, **Writer-R1-4B** and **Writer-R1-8B**, enabling them to better internalize prompt analysis, requirement following, discourse organization, stylistic control, and long-form writing ability.
 
-4. **Closing the Loop between "Learning" and "Thought"**
-   Conceptually, the work operationalizes the philosophical distinction between "Learning" (parameter updates) and "Thought" (inference-time reflection). It establishes a closed loop where dynamic criteria inform both immediate self-correction (inference) and long-term policy optimization (training), solving the limitations of relying solely on one or the other.
+4. **Scalable Skill Generation and Closed-Loop Optimization**
+   To support scalable skill construction, the paper builds a **19K evaluation skill dataset** and trains **EvalSkillGen-4B**, a compact model that directly maps user prompts to evaluation skills. This establishes a closed loop connecting prompt-specific evaluation, inference-time refinement, and reward-based training, allowing evaluation criteria to guide both immediate rewriting and long-term model optimization.
 
 ## 📊 Results
 
-The experimental evaluation of **Writer-R1** demonstrates robust and state-of-the-art performance across several dimensions:
+The experimental evaluation of **Writer-R1** demonstrates consistent and robust improvements across multiple dimensions:
 
-* **High-Quality Automated Evaluation:** The automatically constructed dynamic evaluation criteria achieve performance gains comparable to human annotations. Furthermore, these criteria provide more stable and reliable feedback signals compared to using off-the-shelf LLMs as zero-shot judges, significantly reducing evaluative bias.
-* **Superior Model Performance:** The **Writer-R1-4B** model, trained using this framework, consistently outperforms baseline models across multiple creative writing tasks.
-* **Parameter Efficiency:** Despite its relatively small size, Writer-R1-4B surpasses the writing capabilities of several open-source models with over **100B parameters**, validating the efficacy of the proposed alignment and optimization strategy.
-* **Effective Self-Correction:** The MRPO mechanism proves that models can achieve controlled iterative improvement without additional training during the inference phase, while the training phase successfully internalizes these improvements for end-to-end optimization.
+* **Reliable Dynamic Evaluation Skills:** The automatically constructed prompt-specific evaluation skills can closely approximate or outperform human-curated criteria. They also provide fine-grained, interpretable, and actionable feedback compared with holistic LLM-based judgments, supporting more structured evaluation and refinement of open-ended writing outputs.
+* **Superior Writing Performance:** Both **Writer-R1-4B** and **Writer-R1-8B**, trained with the proposed SkillForge framework, consistently outperform strong general-purpose and writing-specialized baselines on **WritingBench** and **HelloBench**, covering both general writing and long-text generation tasks.
+* **Scalable Skill Construction:** The proposed **19K evaluation skill dataset** enables the training of **EvalSkillGen-4B**, a compact model that directly generates evaluation skills from user prompts. Experiments show that skills generated by both the full SkillForge pipeline and EvalSkillGen-4B exhibit strong criteria alignment and transferability across evaluator and target models.
+* **Effective Inference-Time Refinement:** Skill-guided self-play rewriting provides more stable inference-time improvement than direct answering or holistic self-judgment. Additional analyses on evaluator sources, human evaluation, and decoding behavior further confirm that the observed gains are not tied to a specific evaluator and reflect the general effectiveness of the SkillForge framework.
+
 
 
