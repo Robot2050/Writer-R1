@@ -6,6 +6,8 @@ from swift.plugin import ORM, orms
 from src.llm import Agent
 import random
 import time
+from openai import OpenAI
+import json
 
 PROMPT = """你是一名严谨的学术评审专家，需要根据给定的 checklist，对一份模型生成的回答进行逐项评分和点评。
 
@@ -84,6 +86,59 @@ class WriterRewardFunction(ORM):
                     final=overall_score 
                 except:
                   final=0.4
+            else:
+                try:
+                    client = OpenAI(
+                        # 若没有配置环境变量，请用百炼API Key将下行替换为：api_key="sk-xxx",
+                        api_key='', 
+                        base_url="",
+                    )
+                    completion = client.chat.completions.create(
+                        model="",  
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {'role': 'user', 'content': PROMPT.format(
+                                response=pred_text, 
+                                checklist_str=gt_text
+                            )}
+                        ],
+                        temperature=0.7,
+                        top_p=0.8,
+                        presence_penalty=1.05, 
+                        extra_body={"enable_thinking": True},
+                    )
+                    response=json.loads(completion.model_dump_json())["choices"][0]['message']['content']
+                    try:
+                        review_json = self._parse_reviewer_text(review_text=response)
+                        get_score=0
+                        total_score=0
+                        for item in review_json:
+                            try:
+                                score = float(item["score"])
+                                total = float(item["total"])
+                            except Exception as e:
+                                print(f"Error parsing score/total: {item}. Error: {e}",flush=True)
+                                continue
+
+                            # 合理性检查：total 必须 > 0，score 不能为负
+                            if total <= 0 or score < 0:
+                                continue
+                            if score > total:
+                                continue
+
+                            get_score += score
+                            total_score += total
+
+                        # 防止除零
+                        if total_score == 0:
+                            overall_score = 0.4   # 或者 raise ValueError("No valid score parsed")
+                        else:
+                            overall_score = get_score / total_score
+                        final=overall_score 
+                    except:
+                        final=0.4
+                except:
+                  final=0.4
               
         except Exception as e:
             err = traceback.format_exc()
@@ -142,8 +197,10 @@ class WriterRewardFunction(ORM):
 
     def __call__(self, completions, solution, **kwargs):
         data_pairs = list(zip(completions, solution))
-        max_workers = 8
-        print("生成结果和真值结果：",data_pairs,flush=True)
+        max_workers = 16
+        # 只输出data_pairs的一个结果
+        print("生成结果和真值结果示例：", [data_pairs[0]] if data_pairs else "No data pairs", flush=True)
+        # print("生成结果和真值结果：",data_pairs,flush=True)
         rewards = []
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # map 会保持结果顺序与输入顺序一致
@@ -151,7 +208,6 @@ class WriterRewardFunction(ORM):
             rewards = list(results)
         print(rewards,flush=True)
         return rewards
-
 
 
 

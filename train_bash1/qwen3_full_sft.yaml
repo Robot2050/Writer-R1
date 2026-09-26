@@ -1,0 +1,55 @@
+### model    
+model_name_or_path: /mnt/afs/models/Qwen3-4B
+trust_remote_code: true
+# use_v1_kernels: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+deepspeed: examples/deepspeed/ds_z3_config.json 
+# choices: [ds_z0_config.json, ds_z2_config.json, ds_z3_config.json]
+
+### src/llamafactory/data/template.py
+dataset: 
+template: qwen3_nothink
+enable_thinking: False
+cutoff_len:  16384
+max_samples: 500000
+overwrite_cache: true
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+
+### output
+output_dir: sft_Qwen3-4B-writer
+logging_steps: 10
+save_steps: 20
+plot_loss: true
+overwrite_output_dir: true
+
+# per_device_train_batch_size
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+learning_rate: 1.0e-5
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+
+### eval  
+val_size: 0.002
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 20
+
+### save
+save_total_limit: 1
+load_best_model_at_end: True
+report_to: wandb
+run_name: sft_Qwen3-4B-writer
+
+
+
+
+

@@ -10,12 +10,12 @@ class Agent(object):
     
     # 需要自己编辑这个文件，选择合适的大模型调用，返回字符串结果
     def call_api(self, query: str,top_p: float,temperature: float,max_length: int) -> str:  
-        base_url = "https://api.modelarts-maas.com/v1" # API
+        base_url = "" # API
         api_key = "" # your Api Key
         client = OpenAI(api_key=api_key, base_url=base_url)
 
         response = client.chat.completions.create(
-            model = "qwen3-32b", # deepseek-v3.2-exp, Kimi-K2, longcat-flash-chat, deepseek-r1-250528, DeepSeek-R1
+            model = "qwen3-32b", 
             messages = [
                 {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": query}, 
